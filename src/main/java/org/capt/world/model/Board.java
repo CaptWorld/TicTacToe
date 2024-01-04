@@ -5,7 +5,8 @@ import java.util.stream.Collectors;
 
 public class Board {
 
-    public record Point(short x, short y) { }
+    public record Point(short x, short y) {
+    }
 
     private record Line(List<Point> points) {
         public Character getWinner(Board board) {

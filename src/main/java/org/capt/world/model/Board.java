@@ -5,9 +5,6 @@ import java.util.stream.Collectors;
 
 public class Board {
 
-    public record Point(short x, short y) {
-    }
-
     private record Line(List<Point> points) {
         public Character getWinner(Board board) {
             var players = uniquePlayers(board);
@@ -28,7 +25,6 @@ public class Board {
 
     private static final short BOARD_SIZE = 3;
     private static final List<Line> LINES_TO_CHECK_FOR_WINNER;
-    private static final Scanner SCANNER = new Scanner(System.in);
 
     static {
         LINES_TO_CHECK_FOR_WINNER = new LinkedList<>();
@@ -52,25 +48,26 @@ public class Board {
         LINES_TO_CHECK_FOR_WINNER.add(new Line(rightToLeftDiagonalPoints));
     }
 
-    public static Point get_move(char currentPlayer) {
-        System.out.printf("What is player-%s move's X co-ordinate?: ", currentPlayer);
-        short x = SCANNER.nextShort();
-        System.out.printf("What is player-%s move's Y co-ordinate?: ", currentPlayer);
-        short y = SCANNER.nextShort();
-        return new Point(x, y);
-    }
-
     private final Character[][] state;
 
     public Board() {
         state = new Character[BOARD_SIZE][BOARD_SIZE];
     }
 
-    public void makeMove(Point p, char ch) {
+    public Board(Board board) {
+        this();
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            System.arraycopy(board.state[i], 0, this.state[i], 0, BOARD_SIZE);
+        }
+    }
+
+    public Board makeMove(Point p, char ch) {
         if (!isValidMove(p)) {
             throw new IllegalArgumentException();
         }
-        state[p.x][p.y] = ch;
+        Board newBoard = new Board(this);
+        newBoard.state[p.x()][p.y()] = ch;
+        return newBoard;
     }
 
     public boolean isValidMove(Point p) {
@@ -80,7 +77,7 @@ public class Board {
     }
 
     private Character getPlayerAt(Point p) {
-        return state[p.x][p.y];
+        return state[p.x()][p.y()];
     }
 
     public Character getWinner() {
@@ -95,6 +92,18 @@ public class Board {
 
     public boolean isDraw() {
         return LINES_TO_CHECK_FOR_WINNER.stream().allMatch(line -> line.isDraw(this));
+    }
+
+    public List<Point> getLegalMoves() {
+        List<Point> legalMoves = new ArrayList<>();
+        for (short i = 0; i < BOARD_SIZE; i++) {
+            for (short j = 0; j < BOARD_SIZE; j++) {
+                if (Objects.isNull(state[i][j])) {
+                    legalMoves.add(new Point(i, j));
+                }
+            }
+        }
+        return legalMoves;
     }
 
     public void render() {
